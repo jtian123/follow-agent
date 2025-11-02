@@ -1,0 +1,29 @@
+{
+  "name": "follow-agent",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "extract": "node src/extract.js",
+    "follow": "node src/follow.js",
+    "unfollow": "node src/unfollow.js",
+    "cleanup": "node src/cleanup.js",
+    "migrate": "node migrate-to-postgres.js"
+  },
+  "keywords": [
+    "instagram",
+    "automation",
+    "follow"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "description": "Instagram auto-follow agent with browser automation",
+  "dependencies": {
+    "better-sqlite3": "^12.4.1",
+    "dotenv": "^17.2.3",
+    "pg": "^8.16.3",
+    "puppeteer": "^24.23.0"
+  }
+}

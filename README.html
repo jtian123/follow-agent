@@ -1,0 +1,461 @@
+<!DOCTYPE html><html><head>
+      <title>README</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="file:////Users/jinyaotian/.vscode/extensions/shd101wyy.markdown-preview-enhanced-0.8.19/crossnote/dependencies/katex/katex.min.css">
+      
+      
+      
+      
+      
+      <style>
+      code[class*=language-],pre[class*=language-]{color:#333;background:0 0;font-family:Consolas,"Liberation Mono",Menlo,Courier,monospace;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.4;-moz-tab-size:8;-o-tab-size:8;tab-size:8;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:.8em;overflow:auto;border-radius:3px;background:#f5f5f5}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal;background:#f5f5f5}.token.blockquote,.token.comment{color:#969896}.token.cdata{color:#183691}.token.doctype,.token.macro.property,.token.punctuation,.token.variable{color:#333}.token.builtin,.token.important,.token.keyword,.token.operator,.token.rule{color:#a71d5d}.token.attr-value,.token.regex,.token.string,.token.url{color:#183691}.token.atrule,.token.boolean,.token.code,.token.command,.token.constant,.token.entity,.token.number,.token.property,.token.symbol{color:#0086b3}.token.prolog,.token.selector,.token.tag{color:#63a35c}.token.attr-name,.token.class,.token.class-name,.token.function,.token.id,.token.namespace,.token.pseudo-class,.token.pseudo-element,.token.url-reference .token.variable{color:#795da3}.token.entity{cursor:help}.token.title,.token.title .token.punctuation{font-weight:700;color:#1d3e81}.token.list{color:#ed6a43}.token.inserted{background-color:#eaffea;color:#55a532}.token.deleted{background-color:#ffecec;color:#bd2c00}.token.bold{font-weight:700}.token.italic{font-style:italic}.language-json .token.property{color:#183691}.language-markup .token.tag .token.punctuation{color:#333}.language-css .token.function,code.language-css{color:#0086b3}.language-yaml .token.atrule{color:#63a35c}code.language-yaml{color:#183691}.language-ruby .token.function{color:#333}.language-markdown .token.url{color:#795da3}.language-makefile .token.symbol{color:#795da3}.language-makefile .token.variable{color:#183691}.language-makefile .token.builtin{color:#0086b3}.language-bash .token.keyword{color:#0086b3}pre[data-line]{position:relative;padding:1em 0 1em 3em}pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;display:block;width:100%}pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0));pointer-events:none;line-height:inherit;white-space:pre}pre[data-line] .line-highlight:before,pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none;box-shadow:0 1px #fff}pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}html body{font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ol,html body>ul{margin-bottom:16px}html body ol,html body ul{padding-left:2em}html body ol.no-list,html body ul.no-list{padding:0;list-style-type:none}html body ol ol,html body ol ul,html body ul ol,html body ul ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:700;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::after,html body code::before{letter-spacing:-.2em;content:'\00a0'}html body pre>code{padding:0;margin:0;word-break:normal;white-space:pre;background:0 0;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:after,html body pre code:before,html body pre tt:after,html body pre tt:before{content:normal}html body blockquote,html body dl,html body ol,html body p,html body pre,html body ul{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body code,html body pre{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview ul{list-style:disc}.markdown-preview ul ul{list-style:circle}.markdown-preview ul ul ul{list-style:square}.markdown-preview ol{list-style:decimal}.markdown-preview ol ol,.markdown-preview ul ol{list-style-type:lower-roman}.markdown-preview ol ol ol,.markdown-preview ol ul ol,.markdown-preview ul ol ol,.markdown-preview ul ul ol{list-style-type:lower-alpha}.markdown-preview .newpage,.markdown-preview .pagebreak{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center!important}.markdown-preview:not([data-for=preview]) .code-chunk .code-chunk-btn-group{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .status{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .output-div{margin-bottom:16px}.markdown-preview .md-toc{padding:0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link div,.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}.markdown-preview .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0;min-height:100vh}@media screen and (min-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{font-size:14px!important;padding:1em}}@media print{html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc{padding:0 16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link div,html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% - 300px);padding:2em calc(50% - 457px - 300px / 2);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+      <!-- The content below will be included at the end of the <head> element. --><script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // your code here
+  });
+</script></head><body for="html-export">
+    
+    
+      <div class="crossnote markdown-preview  ">
+      
+<h1 id="instagram-auto-follow-agent">Instagram Auto-Follow Agent </h1>
+<p>An intelligent Instagram automation tool that helps you grow your audience by automatically following targeted users from specific pools (posts or accounts).</p>
+<h2 id="features">Features </h2>
+<ul>
+<li>✅ <strong>Browser Automation</strong> - Uses Puppeteer to mimic real human behavior</li>
+<li>✅ <strong>Smart Rate Limiting</strong> - Conservative 30 follows/day with intelligent delays (45-90s between follows)</li>
+<li>✅ <strong>Session Management</strong> - Persistent login with cookie storage</li>
+<li>✅ <strong>Pool Extraction</strong> - Extract users from post likers, commenters, or account followers</li>
+<li>✅ <strong>Database Tracking</strong> - SQLite database to prevent re-following and track stats</li>
+<li>✅ <strong>Advanced Human-like Behavior</strong> - Profile viewing, random skips, varied delays, non-sequential following</li>
+<li>✅ <strong>Action Block Detection</strong> - Automatically stops if Instagram blocks actions</li>
+</ul>
+<h2 id="installation">Installation </h2>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token comment"># Install dependencies</span>
+<span class="token function">npm</span> <span class="token function">install</span>
+</code></pre><h2 id="usage">Usage </h2>
+<h3 id="new-two-step-workflow-recommended">NEW: Two-Step Workflow (Recommended) </h3>
+<p>The agent now uses a <strong>separated workflow</strong> - extract users once, follow multiple times.</p>
+<h4 id="step-1-extract-users-from-pool">Step 1: Extract Users from Pool </h4>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token function">npm</span> run extract <span class="token operator">&lt;</span>pool_url<span class="token operator">&gt;</span> <span class="token operator">&lt;</span>pool_type<span class="token operator">&gt;</span> <span class="token punctuation">[</span>target_count<span class="token punctuation">]</span>
+</code></pre><p><strong>Examples:</strong></p>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token comment"># Extract 200 followers (default)</span>
+<span class="token function">npm</span> run extract https://www.instagram.com/uclasubletting account_followers
+
+<span class="token comment"># Extract 300 followers</span>
+<span class="token function">npm</span> run extract https://www.instagram.com/uclasubletting account_followers <span class="token number">300</span>
+
+<span class="token comment"># Extract post likers</span>
+<span class="token function">npm</span> run extract https://www.instagram.com/p/ABC123/ post_likers <span class="token number">200</span>
+</code></pre><p><strong>What it does:</strong></p>
+<ul>
+<li>Scrolls modal to extract ALL usernames (aggressive extraction)</li>
+<li>Saves users to database with status <code>pending</code></li>
+<li>Skips users already in database</li>
+<li>Can extract 200-500+ users per pool (Instagram may limit scrolling)</li>
+</ul>
+<h4 id="step-2-follow-users-from-queue">Step 2: Follow Users from Queue </h4>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token function">npm</span> run follow
+</code></pre><p><strong>What it does:</strong></p>
+<ul>
+<li>Pulls pending users from database (up to 15 per session)</li>
+<li>Visits each profile and checks follow status</li>
+<li>If "Already following" → Updates database (syncs phone/web follows)</li>
+<li>If "Follow" button → Clicks and records to database</li>
+<li>Follows up to 30 users per day across multiple sessions</li>
+</ul>
+<h3 id="pool-types">Pool Types </h3>
+<ol>
+<li><strong>post_likers</strong> - Extract users who liked a specific post</li>
+<li><strong>post_commenters</strong> - Extract users who commented on a post</li>
+<li><strong>account_followers</strong> - Extract followers of an account</li>
+</ol>
+<h3 id="old-single-step-command-still-works">Old Single-Step Command (Still Works) </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token function">npm</span> start <span class="token operator">&lt;</span>pool_url<span class="token operator">&gt;</span> <span class="token operator">&lt;</span>pool_type<span class="token operator">&gt;</span>
+<span class="token comment"># Extracts AND follows in one session</span>
+</code></pre><h3 id="first-run">First Run </h3>
+<p>On first run, the browser will open and you'll need to:</p>
+<ol>
+<li>Login to Instagram manually</li>
+<li>The agent will save your session for future runs</li>
+<li>No need to login again on subsequent runs</li>
+</ol>
+<h2 id="how-it-works-current-workflow---approach-b-enhanced">How It Works (Current Workflow - Approach B Enhanced) </h2>
+<h3 id="new-two-step-workflow">New Two-Step Workflow </h3>
+<h4 id="step-1-extraction-npm-run-extract">Step 1: Extraction (<code>npm run extract</code>) </h4>
+<ol>
+<li>Opens Instagram and navigates to pool URL</li>
+<li>Opens followers/likers modal</li>
+<li>Scrolls modal aggressively (up to 50 scrolls or target count)</li>
+<li>Extracts ALL usernames (simplified - no button detection)</li>
+<li>Saves to <code>extracted_users</code> table with status <code>pending</code></li>
+<li>Skips users already in database</li>
+<li>Shows queue stats (pending, followed, total)</li>
+</ol>
+<h4 id="step-2-following-npm-run-follow">Step 2: Following (<code>npm run follow</code>) </h4>
+<ol>
+<li>Pulls pending users from database queue (up to 15 per session)</li>
+<li>For each user:
+<ul>
+<li>Visits profile page</li>
+<li>Checks "Following" button → Updates database (syncs manual follows)</li>
+<li>Checks "Requested" button → Updates database</li>
+<li>Finds "Follow" button → Clicks and records to database</li>
+</ul>
+</li>
+<li>Database auto-syncs with Instagram reality</li>
+<li>Delays: 5-25 seconds between follows</li>
+<li>Session limit: 15 follows, Daily limit: 30 follows</li>
+</ol>
+<h3 id="old-single-step-workflow-v30---still-available">Old Single-Step Workflow (v3.0 - Still Available) </h3>
+<p>Run <code>npm start &lt;pool_url&gt; &lt;pool_type&gt;</code> to extract and follow in one session.</p>
+<h3 id="why-two-step-workflow-approach-b-enhanced">Why Two-Step Workflow? (Approach B Enhanced) </h3>
+<p><strong>Problem with old approach:</strong></p>
+<ul>
+<li>Instagram shows already-followed accounts FIRST in followers modal</li>
+<li>Old extraction: Extract 30 → Likely all already followed → Wasted time</li>
+<li>Manual phone follows NOT in database → Agent visits them anyway</li>
+</ul>
+<p><strong>Solution: Aggressive Extraction + Database Queue</strong></p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>1. Extract 200+ users aggressively (ignore who's followed)
+2. Save ALL to database queue with status "pending"
+3. Follow sessions: Pull from queue, check each profile
+4. When "Already following" found → Update database (self-correcting)
+</code></pre><p><strong>Benefits:</strong></p>
+<ul>
+<li>✅ Extract once, follow many times (reusable queue)</li>
+<li>✅ Database auto-syncs with Instagram over time</li>
+<li>✅ Build queue from multiple pools</li>
+<li>✅ No complex modal button detection (unreliable)</li>
+<li>✅ Profile-level checks are reliable</li>
+<li>✅ Resume-able workflow</li>
+</ul>
+<h2 id="safety-features-low-risk-configuration">Safety Features (Low Risk Configuration) </h2>
+<ul>
+<li><strong>Conservative Daily Limit</strong>: Max 30 follows per day</li>
+<li><strong>Session Limit</strong>: Max 15 follows per session</li>
+<li><strong>Smart Extraction</strong>: Only extracts NEW users (skips already-followed during extraction)</li>
+<li><strong>Fast Delays</strong>: 5-25 seconds between follows (avg ~15s, still human-like)</li>
+<li><strong>Pre-Randomization</strong>: 75% selection applied BEFORE visiting (no wasted visits)</li>
+<li><strong>Minimal Post Viewing</strong>: 10% chance to view posts (balance speed/human behavior)</li>
+<li><strong>Non-Sequential</strong>: Users shuffled before processing</li>
+<li><strong>Random Pauses</strong>: Natural breaks every 3-7 follows</li>
+<li><strong>Action Block Detection</strong>: Auto-stops if Instagram blocks actions</li>
+<li><strong>Duplicate Prevention</strong>: Database + UI check (never re-follow/re-request)</li>
+</ul>
+<h2 id="project-structure">Project Structure </h2>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>follow-agent/
+├── src/
+│   ├── index.js              # Main entry point
+│   ├── services/
+│   │   ├── poolExtractor.js  # Extract users from pools
+│   │   └── followExecutor.js # Execute follow actions
+│   └── utils/
+│       ├── browser.js         # Browser automation utilities
+│       ├── database.js        # SQLite database operations
+│       └── logger.js          # Logging utilities
+├── db/                        # SQLite database files
+├── logs/                      # Daily log files
+├── data/                      # Cookies and session data
+└── package.json
+</code></pre><h2 id="database-schema">Database Schema </h2>
+<h3 id="extracted_users-new---primary-queue">extracted_users (NEW - Primary Queue) </h3>
+<ul>
+<li><code>username</code> - Instagram username</li>
+<li><code>extracted_at</code> - Timestamp when extracted</li>
+<li><code>pool_source</code> - URL of the pool where user was found</li>
+<li><code>pool_type</code> - Type of pool (post_likers/post_commenters/account_followers)</li>
+<li><code>follow_status</code> - Status: <code>pending</code>, <code>followed</code>, <code>already_following</code>, <code>already_requested</code>, <code>error</code></li>
+<li><code>followed_at</code> - Timestamp of follow action</li>
+<li><code>notes</code> - Additional info (error messages, etc.)</li>
+</ul>
+<p><strong>Follow Statuses:</strong></p>
+<ul>
+<li><code>pending</code> - Not yet processed</li>
+<li><code>followed</code> - Successfully followed by agent</li>
+<li><code>already_following</code> - Detected "Following" button (manual follow from phone/web)</li>
+<li><code>already_requested</code> - Follow request pending (private account)</li>
+<li><code>error</code> - Failed to follow (button not found, etc.)</li>
+</ul>
+<h3 id="followed_accounts-legacy---still-used">followed_accounts (Legacy - Still Used) </h3>
+<ul>
+<li><code>username</code> - Instagram username</li>
+<li><code>followed_at</code> - Timestamp of follow action</li>
+<li><code>pool_source</code> - URL of the pool where user was found</li>
+<li><code>status</code> - Current status (followed/unfollowed)</li>
+</ul>
+<h3 id="pools">pools </h3>
+<ul>
+<li><code>pool_url</code> - URL of the pool</li>
+<li><code>pool_type</code> - Type of pool (post_likers/post_commenters/account_followers)</li>
+<li><code>processed_at</code> - Timestamp</li>
+<li><code>total_extracted</code> - Number of users extracted</li>
+</ul>
+<h3 id="daily_stats">daily_stats </h3>
+<ul>
+<li><code>date</code> - Date</li>
+<li><code>follows_count</code> - Number of follows that day</li>
+<li><code>pools_processed</code> - Number of pools processed</li>
+</ul>
+<h2 id="tips-for-best-results">Tips for Best Results </h2>
+<h3 id="recommended-usage-pattern">Recommended Usage Pattern </h3>
+<p><strong>Week 1: Build Queue</strong></p>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token comment"># Extract from multiple pools to build a diverse queue</span>
+<span class="token function">npm</span> run extract https://instagram.com/competitor1 account_followers <span class="token number">200</span>
+<span class="token function">npm</span> run extract https://instagram.com/competitor2 account_followers <span class="token number">200</span>
+<span class="token function">npm</span> run extract https://instagram.com/p/viral_post post_likers <span class="token number">200</span>
+<span class="token comment"># Queue now has ~600 users</span>
+</code></pre><p><strong>Daily: Follow from Queue</strong></p>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token comment"># Morning session (15 follows)</span>
+<span class="token function">npm</span> run follow
+
+<span class="token comment"># Evening session (15 follows)</span>
+<span class="token function">npm</span> run follow
+<span class="token comment"># Daily total: 30 follows</span>
+<span class="token comment"># Queue lasts for 20 days (600 / 30)</span>
+</code></pre><p><strong>As Needed: Refill Queue</strong></p>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token comment"># When queue drops below 100 pending</span>
+<span class="token function">npm</span> run extract <span class="token operator">&lt;</span>new_pool_url<span class="token operator">&gt;</span> account_followers <span class="token number">200</span>
+</code></pre><h3 id="general-tips">General Tips </h3>
+<ol>
+<li><strong>Build Large Queue First</strong> - Extract 200-500 users before starting follows</li>
+<li><strong>Space Out Sessions</strong> - Run 2 follow sessions per day (morning &amp; evening)</li>
+<li><strong>Start Conservative</strong> - Begin with 20-25/day for the first week</li>
+<li><strong>Choose Quality Pools</strong> - Select posts/accounts with your target audience</li>
+<li><strong>Monitor Queue Stats</strong> - Commands show pending/followed/total counts</li>
+<li><strong>Respect Limits</strong> - Don't try to bypass the 30/day limit</li>
+<li><strong>Take Breaks</strong> - If action blocked, wait 6-12 hours before resuming</li>
+<li><strong>Account Age Matters</strong> - Newer accounts should start with 15-20/day</li>
+</ol>
+<h2 id="risk-assessment">Risk Assessment </h2>
+<p>With the current configuration, the risk of account restrictions is <strong>LOW (3-4/10)</strong>:</p>
+<p><strong>Risk Reduction Strategies Implemented:</strong></p>
+<ul>
+<li>✅ Conservative 30/day limit (well below Instagram's ~200/day threshold)</li>
+<li>✅ 45-90 second delays (humans take 30-120 seconds per profile)</li>
+<li>✅ Profile viewing before following (mimics decision-making)</li>
+<li>✅ Random skips (doesn't follow everyone)</li>
+<li>✅ Non-sequential order (not predictable patterns)</li>
+<li>✅ Varied timing (no exact intervals)</li>
+<li>✅ Extended pauses (natural breaks)</li>
+</ul>
+<p><strong>Account Age Recommendations:</strong></p>
+<ul>
+<li><strong>New account (❤️ months)</strong>: Start with 15-20/day for 2 weeks</li>
+<li><strong>Established account (&gt;6 months)</strong>: Can use full 30/day</li>
+<li><strong>Very old account (&gt;1 year)</strong>: Could push to 40/day if needed</li>
+</ul>
+<h2 id="technical-deep-dive">Technical Deep Dive </h2>
+<p>This section documents the evolution of the agent and key technical challenges solved.</p>
+<p><strong>Version History:</strong></p>
+<ul>
+<li><strong>v1.0</strong>: Basic extraction with XPath button verification</li>
+<li><strong>v2.0</strong>: Multi-strategy button state detection</li>
+<li><strong>v3.0 (Current)</strong>: Simplified click-and-record + reliable scrolling</li>
+</ul>
+<h3 id="modal-scroll-fix-v30">Modal Scroll Fix (v3.0) </h3>
+<p><strong>Problem:</strong> Modal wasn't scrolling at all, only extracting first 12 users visible.</p>
+<p><strong>Root Cause:</strong></p>
+<ul>
+<li>Original code: <code>document.querySelector('div[role="dialog"] &gt; div &gt; div')</code></li>
+<li>This selector didn't match Instagram's actual modal structure</li>
+<li>Modal has scrollable element but not at that exact path</li>
+</ul>
+<p><strong>Solution - Multi-Strategy Scroll Detection:</strong></p>
+<pre data-role="codeBlock" data-info="javascript" class="language-javascript javascript"><code><span class="token comment">// Strategy 1: Find ANY element with scrollHeight &gt; clientHeight</span>
+<span class="token keyword keyword-const">const</span> allElements <span class="token operator">=</span> dialog<span class="token punctuation">.</span><span class="token method function property-access">querySelectorAll</span><span class="token punctuation">(</span><span class="token string">'*'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+scrollContainer <span class="token operator">=</span> <span class="token known-class-name class-name">Array</span><span class="token punctuation">.</span><span class="token keyword module keyword-from">from</span><span class="token punctuation">(</span>allElements<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token method function property-access">find</span><span class="token punctuation">(</span><span class="token parameter">el</span> <span class="token arrow operator">=&gt;</span> <span class="token punctuation">{</span>
+  <span class="token keyword control-flow keyword-return">return</span> el<span class="token punctuation">.</span><span class="token property-access">scrollHeight</span> <span class="token operator">&gt;</span> el<span class="token punctuation">.</span><span class="token property-access">clientHeight</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// Strategy 2: Try direct children</span>
+<span class="token keyword control-flow keyword-if">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>scrollContainer<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  scrollContainer <span class="token operator">=</span> <span class="token dom variable">document</span><span class="token punctuation">.</span><span class="token method function property-access">querySelector</span><span class="token punctuation">(</span><span class="token string">'div[role="dialog"] &gt; div &gt; div'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// Strategy 3: Try the dialog itself</span>
+<span class="token keyword control-flow keyword-if">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>scrollContainer<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  scrollContainer <span class="token operator">=</span> dialog<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre><p><strong>Result:</strong></p>
+<ul>
+<li>✅ Scroll now works reliably</li>
+<li>✅ Extracts 30+ users instead of 12</li>
+<li>✅ Method: "found-scrollable-element" (finds any scrollable element in modal)</li>
+</ul>
+<p><strong>Debug Output Example:</strong></p>
+<pre data-role="codeBlock" data-info="javascript" class="language-javascript javascript"><code><span class="token maybe-class-name">Modal</span> structure<span class="token operator">:</span> <span class="token punctuation">{</span>
+  <span class="token literal-property property">found</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+  <span class="token literal-property property">childrenCount</span><span class="token operator">:</span> <span class="token number">1</span><span class="token punctuation">,</span>
+  <span class="token literal-property property">childrenTags</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'DIV'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token literal-property property">hasScrollable</span><span class="token operator">:</span> <span class="token boolean">false</span>  <span class="token comment">// Direct children not scrollable</span>
+<span class="token punctuation">}</span>
+
+<span class="token maybe-class-name">Scroll</span> result<span class="token operator">:</span> <span class="token punctuation">{</span>
+  <span class="token literal-property property">success</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+  <span class="token literal-property property">method</span><span class="token operator">:</span> <span class="token string">'found-scrollable-element'</span><span class="token punctuation">,</span>  <span class="token comment">// Found deep in tree</span>
+  <span class="token literal-property property">scrolled</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+  <span class="token literal-property property">scrollTop</span><span class="token operator">:</span> <span class="token number">477</span><span class="token punctuation">,</span>
+  <span class="token literal-property property">scrollHeight</span><span class="token operator">:</span> <span class="token number">786</span>
+<span class="token punctuation">}</span>
+</code></pre><p><strong>Key Insight:</strong> Instagram's scrollable element is nested deep in the modal, not a direct child. Strategy 1 searches ALL descendants to find it.</p>
+<h3 id="button-detection-evolution">Button Detection Evolution </h3>
+<p><strong>v1.0 - Complex XPath with Verification:</strong></p>
+<pre data-role="codeBlock" data-info="javascript" class="language-javascript javascript"><code><span class="token comment">// Click button</span>
+<span class="token function">clickByXPath</span><span class="token punctuation">(</span><span class="token string">"//button[contains(., 'Follow')]"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// Wait and verify state changed</span>
+<span class="token keyword keyword-const">const</span> isFollowing <span class="token operator">=</span> <span class="token function">existsByXPath</span><span class="token punctuation">(</span><span class="token string">"//button[contains(., 'Following')]"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre><p><strong>Problem:</strong> Button state verification failed, nothing saved to database.</p>
+<p><strong>v2.0 - Multi-Strategy Button Detection:</strong></p>
+<pre data-role="codeBlock" data-info="javascript" class="language-javascript javascript"><code><span class="token comment">// Try to detect button state after click</span>
+<span class="token keyword keyword-const">const</span> buttonState <span class="token operator">=</span> page<span class="token punctuation">.</span><span class="token method function property-access">evaluate</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token arrow operator">=&gt;</span> <span class="token punctuation">{</span>
+  <span class="token keyword keyword-const">const</span> buttons <span class="token operator">=</span> <span class="token known-class-name class-name">Array</span><span class="token punctuation">.</span><span class="token keyword module keyword-from">from</span><span class="token punctuation">(</span><span class="token dom variable">document</span><span class="token punctuation">.</span><span class="token method function property-access">querySelectorAll</span><span class="token punctuation">(</span><span class="token string">'button'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword keyword-const">const</span> followBtn <span class="token operator">=</span> buttons<span class="token punctuation">.</span><span class="token method function property-access">find</span><span class="token punctuation">(</span><span class="token parameter">btn</span> <span class="token arrow operator">=&gt;</span>
+    btn<span class="token punctuation">.</span><span class="token property-access">textContent</span><span class="token punctuation">.</span><span class="token method function property-access">includes</span><span class="token punctuation">(</span><span class="token string">'Following'</span><span class="token punctuation">)</span> <span class="token operator">||</span> btn<span class="token punctuation">.</span><span class="token property-access">textContent</span><span class="token punctuation">.</span><span class="token method function property-access">includes</span><span class="token punctuation">(</span><span class="token string">'Requested'</span><span class="token punctuation">)</span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword control-flow keyword-return">return</span> followBtn <span class="token operator">?</span> <span class="token string">'following/requested'</span> <span class="token operator">:</span> <span class="token string">'unknown'</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre><p><strong>Problem:</strong> Always returned "unknown" - couldn't reliably detect button state change.</p>
+<p><strong>v3.0 - Simplified Click-and-Record (Current):</strong></p>
+<pre data-role="codeBlock" data-info="javascript" class="language-javascript javascript"><code><span class="token comment">// Click button</span>
+<span class="token keyword keyword-const">const</span> followClicked <span class="token operator">=</span> <span class="token function">clickByXPath</span><span class="token punctuation">(</span><span class="token string">"//button[contains(., 'Follow')]"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword control-flow keyword-if">if</span> <span class="token punctuation">(</span>followClicked<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token comment">// Immediately record as followed - no verification needed!</span>
+  <span class="token function">addFollowedAccount</span><span class="token punctuation">(</span>username<span class="token punctuation">,</span> poolSource<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">incrementTodayFollowCount</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre><p><strong>Result:</strong></p>
+<ul>
+<li>✅ Works reliably</li>
+<li>✅ Database tracking now functional</li>
+<li>✅ Assumes click = success (Instagram rarely fails on click)</li>
+</ul>
+<p><strong>Key Insight:</strong> Button state verification is unreliable in Instagram's dynamic UI. Trust the click action instead.</p>
+<hr>
+<h2 id="troubleshooting">Troubleshooting </h2>
+<h3 id="action-blocked-error">"Action Blocked" Error </h3>
+<ul>
+<li>Instagram has temporarily blocked following</li>
+<li>Wait 6-12 hours before trying again</li>
+<li>If repeated: reduce daily limit to 20 or pause for 2-3 days</li>
+</ul>
+<h3 id="follow-button-not-found">"Follow button not found" </h3>
+<ul>
+<li>Profile may be private or follow button UI changed</li>
+<li>Agent will skip and continue to next user</li>
+</ul>
+<h3 id="login-issues">Login Issues </h3>
+<ul>
+<li>Delete <code>data/cookies.json</code> and login again</li>
+<li>Make sure you're not using 2FA (or handle it manually)</li>
+</ul>
+<h2 id="logs">Logs </h2>
+<p>All actions are logged to:</p>
+<ul>
+<li><strong>Console</strong>: Real-time progress</li>
+<li><strong>Database</strong>: Persistent tracking (<code>db/follow-agent.db</code>)</li>
+<li><strong>Log Files</strong>: Daily logs in <code>logs/</code> directory</li>
+</ul>
+<h2 id="performance--efficiency">Performance &amp; Efficiency </h2>
+<h3 id="-optimized-workflow-v20">⚡ Optimized Workflow (v2.0) </h3>
+<p><strong>Speed Improvements:</strong></p>
+<ul>
+<li>~4x faster than v1.0 (4 mins vs 17 mins per session)</li>
+<li>5-25s delays (was 45-90s)</li>
+<li>Pre-randomization eliminates wasted visits</li>
+<li>Smart extraction gets only NEW users</li>
+</ul>
+<p><strong>Session Time:</strong></p>
+<ul>
+<li>15 follows @ avg 15s = <strong>~4 minutes per session</strong></li>
+<li>Daily goal (30) = <strong>~8 minutes total</strong> (2 sessions)</li>
+</ul>
+<p><strong>Efficiency Features:</strong></p>
+<ol>
+<li><strong>Smart Extraction</strong> - Filters during scroll (checks button text in modal)</li>
+<li><strong>Target-Based</strong> - Extracts 2x session limit (30+ for 15 session)</li>
+<li><strong>Pre-Randomization</strong> - 75% selection before visiting (saves 25% time)</li>
+<li><strong>Minimal Viewing</strong> - 10% post views (was 30%)</li>
+</ol>
+<h3 id="expected-output-examples">Expected Output Examples </h3>
+<h4 id="extract-command">Extract Command </h4>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token function">npm</span> run extract https://www.instagram.com/uclasubletting account_followers <span class="token number">200</span>
+</code></pre><pre data-role="codeBlock" data-info="" class="language-text"><code>📊 Current Queue Status:
+   ⏳ Pending users: 0
+   ✅ Followed: 0
+   👥 Already following: 0
+   📈 Total in database: 0
+
+🔍 Extracting users from pool: https://www.instagram.com/uclasubletting/
+📋 Pool type: account_followers
+🎯 Target: 200+ users
+
+   📜 Scrolling to extract 200 users (max 50 scrolls)...
+   📊 Extracted 47 total users...
+   📊 Extracted 94 total users...
+   📊 Extracted 152 total users...
+   ✅ Target reached: 215 users extracted
+
+   💾 Saving 215 users to database...
+   ✅ Added 215 NEW users to queue
+   ⏭️  Skipped 0 (already in database)
+
+📊 Updated Queue Status:
+   ⏳ Pending users: 215
+   ✅ Followed: 0
+   👥 Already following: 0
+   📈 Total in database: 215
+</code></pre><h4 id="follow-command">Follow Command </h4>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token function">npm</span> run follow
+</code></pre><pre data-role="codeBlock" data-info="" class="language-text"><code>📊 Daily Progress:
+   ✅ Completed today: 0/30 follows
+   🎯 Remaining: 30 follows
+   📋 Session limit: 15 follows
+
+📊 Queue Status:
+   ⏳ Pending users: 215
+   ✅ Followed: 0
+   👥 Already following: 0
+   📈 Total in database: 215
+
+📋 Found 30 pending users in queue
+🚀 Will process up to 15 users this session
+
+[1/15] 👤 Processing: @username1
+   ✅ Followed/Requested @username1
+   ⏳ Waiting 37s before next user...
+
+[2/15] 👤 Processing: @username2
+   ⏭️  Already following @username2
+   💾 Updated database (synced from Instagram)
+
+[3/15] 👤 Processing: @username3
+   ✅ Followed/Requested @username3
+   ⏳ Waiting 42s before next user...
+
+📊 SESSION SUMMARY
+✅ Successfully followed: 13
+⏭️  Skipped (already following): 2
+❌ Errors: 0
+📈 Total followed today: 13/30
+🎯 Remaining today: 17
+</code></pre><h2 id="disclaimer">Disclaimer </h2>
+<p>This tool is for educational purposes. Use responsibly and respect Instagram's Terms of Service. Excessive automation may result in account restrictions or bans.</p>
+
+      </div>
+      
+      
+    
+    
+    
+    
+    
+    
+  
+    </body></html>
