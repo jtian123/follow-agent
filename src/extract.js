@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { initDatabase, getQueueStats, addPool } from './utils/database.js';
+import { initDatabase, getQueueStats, addPool, closeDatabase } from './utils/database.js';
 import { launchBrowser, isLoggedIn, login, closeBrowser, setAccount, wait } from './utils/browser.js';
 import { extractUsersFromPool } from './services/poolExtractor.js';
 
@@ -93,6 +93,7 @@ async function main() {
     if (users.length === 0) {
       console.log('❌ No users extracted from pool.\n');
       await closeBrowser();
+      await closeDatabase();
       process.exit(0);
     }
 
@@ -110,6 +111,7 @@ async function main() {
     // Close browser
     console.log('✅ Extraction completed!');
     await closeBrowser();
+    await closeDatabase();
 
     console.log('\n💡 Next steps:');
     console.log('   1. Run "npm run follow" to start following users from the queue');
@@ -119,6 +121,7 @@ async function main() {
     console.error('\n❌ Error:', err.message);
     console.error(err.stack);
     await closeBrowser();
+    await closeDatabase();
     process.exit(1);
   }
 }
@@ -127,6 +130,7 @@ async function main() {
 process.on('SIGINT', async () => {
   console.log('\n\n⏸️  Process interrupted by user');
   await closeBrowser();
+  await closeDatabase();
   process.exit(0);
 });
 

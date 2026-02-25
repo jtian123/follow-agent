@@ -9,7 +9,8 @@
     "follow": "node src/follow.js",
     "unfollow": "node src/unfollow.js",
     "cleanup": "node src/cleanup.js",
-    "migrate": "node migrate-to-postgres.js"
+    "migrate": "node migrate-to-postgres.js",
+    "cache-cleanup": "node src/cache-cleanup.js"
   },
   "keywords": [
     "instagram",

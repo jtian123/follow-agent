@@ -1,30 +1,38 @@
 #!/usr/bin/env node
 
-import { initDatabase } from './utils/database.js';
+import { initDatabase, closeDatabase } from './utils/database.js';
 import pool from './utils/database.js';
 
 // Parse command line arguments
 const args = process.argv.slice(2);
 
-if (args.length < 1) {
+// Check for --all flag
+const allFlag = args.includes('--all');
+
+if (args.length < 1 && !allFlag) {
   console.log('\n❌ Usage: npm run cleanup <pool_url> [--account <name>] [--dry-run]');
+  console.log('   OR: npm run cleanup --all [--account <name>] [--dry-run]');
   console.log('\nOptions:');
+  console.log('  --all           : Remove ALL pending users (ignores pool_url)');
   console.log('  --account, -a   : Instagram account to filter by (default: all accounts)');
   console.log('  --dry-run       : Preview what would be deleted without actually deleting');
   console.log('  --today         : Only remove users extracted today');
+  console.log('  --pending       : Only remove users with status "pending" (default for --all)');
   console.log('\nExamples:');
+  console.log('  npm run cleanup --all --account uw_apateu --dry-run');
+  console.log('  npm run cleanup --all --account uw_apateu');
   console.log('  npm run cleanup https://www.instagram.com/ditto_usc/ --account usc_apateu --dry-run');
-  console.log('  npm run cleanup https://www.instagram.com/ditto_usc/ --account usc_apateu --today');
-  console.log('  npm run cleanup https://www.instagram.com/ditto_usc/\n');
+  console.log('  npm run cleanup https://www.instagram.com/ditto_usc/ --account usc_apateu --today\n');
   process.exit(1);
 }
 
-const poolUrl = args[0];
+const poolUrl = allFlag ? null : args[0];
 
 // Check for flags
 let accountName = null;
 let dryRun = args.includes('--dry-run');
 let todayOnly = args.includes('--today');
+let pendingOnly = args.includes('--pending') || allFlag; // Default to pending when using --all
 
 const accountFlagIndex = args.findIndex(arg => arg === '--account' || arg === '-a');
 if (accountFlagIndex !== -1 && args[accountFlagIndex + 1]) {
@@ -43,14 +51,26 @@ async function main() {
     await initDatabase();
 
     // Build query
-    let query = 'SELECT * FROM extracted_users WHERE pool_source = $1';
-    let params = [poolUrl];
-    let paramCount = 1;
+    let query = 'SELECT * FROM extracted_users WHERE 1=1';
+    let params = [];
+    let paramCount = 0;
+
+    if (!allFlag && poolUrl) {
+      paramCount++;
+      query += ` AND pool_source = $${paramCount}`;
+      params.push(poolUrl);
+    }
 
     if (accountName) {
       paramCount++;
       query += ` AND extracted_by_account = $${paramCount}`;
       params.push(accountName);
+    }
+
+    if (pendingOnly) {
+      paramCount++;
+      query += ` AND follow_status = $${paramCount}`;
+      params.push('pending');
     }
 
     if (todayOnly) {
@@ -66,14 +86,20 @@ async function main() {
 
     if (usersToDelete.length === 0) {
       console.log('ℹ️  No users found matching the criteria.\n');
+      await closeDatabase();
       process.exit(0);
     }
 
     // Show what will be deleted
     console.log(`🔍 Found ${usersToDelete.length} users to remove:\n`);
-    console.log('Pool URL:', poolUrl);
+    if (allFlag) {
+      console.log('Mode: Remove ALL pending users');
+    } else {
+      console.log('Pool URL:', poolUrl);
+    }
     if (accountName) console.log('Account:', accountName);
     if (todayOnly) console.log('Filter: Today only');
+    if (pendingOnly && !allFlag) console.log('Status: Pending only');
     console.log('');
 
     // Show breakdown by status
@@ -101,6 +127,7 @@ async function main() {
     if (dryRun) {
       console.log('🔍 DRY RUN MODE - No changes made to database');
       console.log('💡 Remove --dry-run flag to actually delete these users\n');
+      await closeDatabase();
       process.exit(0);
     }
 
@@ -140,9 +167,12 @@ async function main() {
       console.log(`📊 Total remaining users: ${remaining.rows[0].count}\n`);
     }
 
+    await closeDatabase();
+
   } catch (err) {
     console.error('\n❌ Error:', err.message);
     console.error(err.stack);
+    await closeDatabase();
     process.exit(1);
   }
 }

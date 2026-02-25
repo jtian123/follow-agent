@@ -139,7 +139,7 @@ npm run follow [session_limit] --account <name>
 npm run follow
 
 # Follow 20 users with specific account
-npm run follow 20 --account ucla_apateu
+npm run follow -- 20 --account ucla_apateu
 
 # Using environment variable
 IG_ACCOUNT=sf_apateu npm run follow 15

@@ -58,7 +58,14 @@ export async function launchBrowser() {
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-blink-features=AutomationControlled',
-      '--disable-features=IsolateOrigins,site-per-process'
+      '--disable-features=IsolateOrigins,site-per-process',
+      // Disable caching to reduce storage usage (cookies still persist)
+      '--disk-cache-size=1',
+      '--media-cache-size=1',
+      '--disable-gpu-shader-disk-cache',
+      '--disable-application-cache',
+      '--disable-offline-load-stale-cache',
+      '--disable-back-forward-cache'
     ],
     defaultViewport: {
       width: 1280,
@@ -99,7 +106,21 @@ export async function saveCookies() {
 // Check if logged in
 export async function isLoggedIn() {
   try {
-    await page.goto('https://www.instagram.com/', { waitUntil: 'networkidle2' });
+    // Try networkidle2 first, fall back to domcontentloaded if it times out
+    try {
+      await page.goto('https://www.instagram.com/', {
+        waitUntil: 'networkidle2',
+        timeout: 60000 // 60 second timeout
+      });
+    } catch (err) {
+      // If networkidle2 fails, try with domcontentloaded
+      console.log(`⚠️  Retrying login check with relaxed conditions...`);
+      await page.goto('https://www.instagram.com/', {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000
+      });
+    }
+
     await wait(2000);
 
     // Check if we see the login form or the home feed

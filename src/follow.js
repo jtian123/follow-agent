@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { initDatabase, getTodayFollowCount, getQueueStats } from './utils/database.js';
+import { initDatabase, getTodayFollowCount, getQueueStats, closeDatabase } from './utils/database.js';
 import { launchBrowser, isLoggedIn, login, closeBrowser, setAccount } from './utils/browser.js';
 import { executeFollowsFromQueue } from './services/followExecutor.js';
 
@@ -64,6 +64,7 @@ async function main() {
     if (queueStats.pending === 0) {
       console.log('⚠️  No pending users in queue!');
       console.log('💡 Run "npm run extract <pool_url> <pool_type>" to add users.\n');
+      await closeDatabase();
       process.exit(0);
     }
 
@@ -103,10 +104,14 @@ async function main() {
     console.log('   - Run "npm run extract" to add more users to queue');
     console.log('   - Run "npm run follow" again to continue following\n');
 
+    // Close database connection AFTER all queries are done
+    await closeDatabase();
+
   } catch (err) {
     console.error('\n❌ Error:', err.message);
     console.error(err.stack);
     await closeBrowser();
+    await closeDatabase();
     process.exit(1);
   }
 }
@@ -115,6 +120,7 @@ async function main() {
 process.on('SIGINT', async () => {
   console.log('\n\n⏸️  Process interrupted by user');
   await closeBrowser();
+  await closeDatabase();
   process.exit(0);
 });
 

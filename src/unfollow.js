@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { initDatabase, getTodayUnfollowCount } from './utils/database.js';
+import { initDatabase, getTodayUnfollowCount, closeDatabase } from './utils/database.js';
 import { launchBrowser, isLoggedIn, login, closeBrowser, setAccount } from './utils/browser.js';
 import { unfollowAll } from './services/unfollowExecutor.js';
 
@@ -91,10 +91,14 @@ async function main() {
     console.log('   - The script will automatically extract your current following list');
     console.log('   - Use lower session limits if you want to be more conservative\n');
 
+    // Close database connection AFTER all queries are done
+    await closeDatabase();
+
   } catch (err) {
     console.error('\n❌ Error:', err.message);
     console.error(err.stack);
     await closeBrowser();
+    await closeDatabase();
     process.exit(1);
   }
 }
@@ -103,6 +107,7 @@ async function main() {
 process.on('SIGINT', async () => {
   console.log('\n\n⏸️  Process interrupted by user');
   await closeBrowser();
+  await closeDatabase();
   process.exit(0);
 });
 

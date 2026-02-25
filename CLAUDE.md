@@ -191,6 +191,7 @@ Both you and your partner should:
 3. **Queue Management**: Track daily quota, session quota, and already-followed users
 4. **Error Recovery**: Handle network issues, Instagram errors, action blocks gracefully
 5. **Logging**: Detailed logs for debugging and analytics (which pools convert best)
+6. **Storage Optimization**: Browser cache is disabled to keep storage minimal (~5-10MB per account vs 2GB+). Only cookies are persisted for login sessions.
 
 ## Command Structure
 
@@ -218,6 +219,14 @@ npm run unfollow [session_limit] [max_extract] --account <name>
 ```bash
 npm run cleanup <pool_url> --account <name> --today --dry-run
 # Example: npm run cleanup https://instagram.com/badpool/ --account usc_apateu --today
+```
+
+**Clean browser cache (reduces storage usage):**
+```bash
+npm run cache-cleanup [account_name] [--dry-run]
+# Example: npm run cache-cleanup --dry-run  # Preview what will be deleted
+# Example: npm run cache-cleanup             # Clean all accounts
+# Example: npm run cache-cleanup ucla_apateu # Clean specific account
 ```
 
 **Environment variable alternative (simpler):**

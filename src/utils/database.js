@@ -5,12 +5,17 @@ dotenv.config();
 
 const { Pool } = pg;
 
-// Create PostgreSQL connection pool
+// Create PostgreSQL connection pool with timeout handling
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false // Required for most cloud PostgreSQL providers
-  }
+  },
+  // Connection pool settings to prevent timeouts
+  max: 20, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  connectionTimeoutMillis: 10000, // Return error if connection takes longer than 10 seconds
+  statement_timeout: 10000, // Kill queries that take longer than 10 seconds
 });
 
 // Test connection
@@ -138,21 +143,50 @@ export async function getTodayFollowCount() {
   return result.rows.length > 0 ? result.rows[0].follows_count : 0;
 }
 
-// Increment today's follow count
+// Increment today's follow count with retry logic
 export async function incrementTodayFollowCount() {
   const today = new Date().toISOString().split('T')[0];
-  await pool.query(`
-    INSERT INTO daily_stats (date, follows_count) VALUES ($1, 1)
-    ON CONFLICT(date) DO UPDATE SET follows_count = daily_stats.follows_count + 1
-  `, [today]);
+  const maxRetries = 3;
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await pool.query(`
+        INSERT INTO daily_stats (date, follows_count) VALUES ($1, 1)
+        ON CONFLICT(date) DO UPDATE SET follows_count = daily_stats.follows_count + 1
+      `, [today]);
+      return; // Success!
+    } catch (err) {
+      lastError = err;
+      if (err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET') {
+        console.log(`   ⚠️  Database timeout (attempt ${attempt}/${maxRetries}), retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+      } else {
+        throw err; // Non-timeout error, throw immediately
+      }
+    }
+  }
+
+  console.error(`   ❌ Failed to update database after ${maxRetries} attempts:`, lastError.message);
+  throw lastError;
 }
 
 // Add pool record
 export async function addPool(poolUrl, poolType, totalExtracted) {
-  await pool.query(
-    'INSERT INTO pools (pool_url, pool_type, total_extracted) VALUES ($1, $2, $3)',
-    [poolUrl, poolType, totalExtracted]
-  );
+  try {
+    await pool.query(
+      'INSERT INTO pools (pool_url, pool_type, total_extracted) VALUES ($1, $2, $3)',
+      [poolUrl, poolType, totalExtracted]
+    );
+    console.log(`✅ Pool record saved to database (${totalExtracted} users)`);
+    return true;
+  } catch (err) {
+    console.error('❌ Error saving pool record to database:', err.message);
+    console.error('   Pool URL:', poolUrl);
+    console.error('   Pool Type:', poolType);
+    console.error('   Total Extracted:', totalExtracted);
+    return false;
+  }
 }
 
 // Get all followed accounts
@@ -266,13 +300,32 @@ export async function getTodayUnfollowCount() {
   return result.rows.length > 0 ? result.rows[0].unfollows_count : 0;
 }
 
-// Increment today's unfollow count
+// Increment today's unfollow count with retry logic
 export async function incrementTodayUnfollowCount() {
   const today = new Date().toISOString().split('T')[0];
-  await pool.query(`
-    INSERT INTO daily_stats (date, unfollows_count) VALUES ($1, 1)
-    ON CONFLICT(date) DO UPDATE SET unfollows_count = daily_stats.unfollows_count + 1
-  `, [today]);
+  const maxRetries = 3;
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await pool.query(`
+        INSERT INTO daily_stats (date, unfollows_count) VALUES ($1, 1)
+        ON CONFLICT(date) DO UPDATE SET unfollows_count = daily_stats.unfollows_count + 1
+      `, [today]);
+      return; // Success!
+    } catch (err) {
+      lastError = err;
+      if (err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET') {
+        console.log(`   ⚠️  Database timeout (attempt ${attempt}/${maxRetries}), retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+      } else {
+        throw err; // Non-timeout error, throw immediately
+      }
+    }
+  }
+
+  console.error(`   ❌ Failed to update database after ${maxRetries} attempts:`, lastError.message);
+  throw lastError;
 }
 
 // Close pool (for graceful shutdown)

@@ -204,7 +204,7 @@ IG_ACCOUNT=sf_apateu npm run unfollow
 npm run unfollow 200 --account sf_apateu
 
 # Unfollow 100 users, extract max 500 from following list
-npm run unfollow 100 500 --account sf_apateu
+npm run unfollow -- 200 200 --account ucb_apateu
 ```
 
 ### How It Works
@@ -325,7 +325,7 @@ npm run extract https://www.instagram.com/quality_account/ account_followers 300
 npm run cleanup https://www.instagram.com/target/ --account usc_apateu
 
 # Re-extract with higher count
-npm run extract https://www.instagram.com/target/ account_following 500 --account usc_apateu
+npm run extract https://www.instagram.com/columbiasubletting/ account_following 500 --account columbia_apateu
 ```
 
 ### Important Notes
