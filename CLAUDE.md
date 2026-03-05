@@ -132,7 +132,7 @@ Both you and your partner should:
 
 #### Unfollow Workflow
 ```
-1. Unfollow: npm run unfollow [session_limit] [max_extract] --account <name>
+1. Unfollow: npm run unfollow -- [session_limit] [max_extract] --account <name>
    - Navigate to profile's following page
    - Scroll and extract all usernames being followed
    - Visit each profile → Click "Following" → "Unfollow"
@@ -211,8 +211,8 @@ npm run follow [session_limit] --account <name>
 
 **Unfollow current followings:**
 ```bash
-npm run unfollow [session_limit] [max_extract] --account <name>
-# Example: npm run unfollow 150 --account sf_apateu
+npm run unfollow -- [session_limit] [max_extract] --account <name>
+# Example: npm run unfollow -- 150 --account sf_apateu
 ```
 
 **Cleanup extracted users:**

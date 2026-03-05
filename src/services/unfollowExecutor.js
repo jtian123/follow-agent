@@ -1,4 +1,4 @@
-import { getPage, navigateTo, randomDelay, wait, getCurrentAccount } from '../utils/browser.js';
+import { getPage, navigateTo, randomDelay, wait, getCurrentAccount, login } from '../utils/browser.js';
 import { incrementTodayUnfollowCount, getTodayUnfollowCount } from '../utils/database.js';
 import { existsByXPath, clickByXPath } from '../utils/helpers.js';
 
@@ -49,7 +49,20 @@ export async function extractCurrentFollowing(maxUsers = 1000) {
       });
 
       if (!altClicked) {
-        throw new Error('Could not find Profile button');
+        // Check if we've been logged out — if so, re-login and retry
+        const isOnLoginPage = await page.$('input[name="username"]');
+        if (isOnLoginPage) {
+          console.log('\n⚠️  Session expired — Instagram requires you to log in again.');
+          console.log('🔐 Please log in manually in the browser window. You have 5 minutes.\n');
+          await login();
+          // Retry navigation to home and profile click
+          await navigateTo('https://www.instagram.com/');
+          await wait(3000);
+          const retryClicked = await clickByXPath(page, "//a[contains(., 'Profile')] | //span[contains(., 'Profile')]/parent::a | //*[contains(text(), 'Profile')]/ancestor::a");
+          if (!retryClicked) throw new Error('Could not find Profile button after re-login');
+        } else {
+          throw new Error('Could not find Profile button');
+        }
       }
     }
 

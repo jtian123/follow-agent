@@ -123,9 +123,13 @@ export async function isLoggedIn() {
 
     await wait(2000);
 
-    // Check if we see the login form or the home feed
+    // Check for positive signs of being logged in (nav sidebar only exists when logged in)
     const loginForm = await page.$('input[name="username"]');
-    return loginForm === null; // If no login form, we're logged in
+    if (loginForm) return false;
+
+    // Also confirm we can see logged-in nav elements (home/search/reels icons in sidebar)
+    const loggedInNav = await page.$('nav a[href="/"], a[href*="/direct/inbox/"], svg[aria-label="Home"]');
+    return loggedInNav !== null;
   } catch (err) {
     console.error('Error checking login status:', err.message);
     return false;

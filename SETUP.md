@@ -107,10 +107,10 @@ Once setup is complete, use the tool normally:
 npm run extract -- <pool_url> <pool_type> [count] --account <name>
 
 # Follow users
-npm run follow [session_limit] --account <name>
+npm run follow -- [session_limit] --account <name>
 
 # Unfollow users
-npm run unfollow [session_limit] --account <name>
+npm run unfollow -- [session_limit] --account <name>
 ```
 
 All data is automatically shared between team members!
