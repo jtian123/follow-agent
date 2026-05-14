@@ -81,9 +81,33 @@ export async function initDatabase() {
       )
     `);
 
+    // Migration: add per-account ownership to followed_accounts. Without
+    // this column, all agent accounts share one global table — meaning
+    // uw_apateu's unfollow tool can pull rows that ucla_apateu actually
+    // followed. Idempotent.
+    await client.query(`
+      ALTER TABLE followed_accounts
+      ADD COLUMN IF NOT EXISTS followed_by_account TEXT
+    `);
+
+    // Replace the global UNIQUE(username) with composite UNIQUE(username,
+    // followed_by_account) so two accounts can both record following the
+    // same user. Old constraint is auto-named by PG.
+    await client.query(`
+      ALTER TABLE followed_accounts
+      DROP CONSTRAINT IF EXISTS followed_accounts_username_key
+    `);
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS followed_accounts_username_account_key
+      ON followed_accounts (username, followed_by_account)
+    `);
+
     // Create indexes for faster queries
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_followed_username ON followed_accounts(username);
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_followed_by_account ON followed_accounts(followed_by_account, status, followed_at);
     `);
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_daily_stats_date ON daily_stats(date);
@@ -107,26 +131,31 @@ export async function initDatabase() {
   }
 }
 
-// Check if user is already followed
-export async function isAlreadyFollowed(username) {
+// Check if a specific account already follows this user. Per-account: returns
+// false even if a *different* account followed them, since the answer is used
+// to decide whether to follow from the current session.
+export async function isAlreadyFollowed(username, accountName) {
   const result = await pool.query(
-    'SELECT username FROM followed_accounts WHERE username = $1 AND status = $2',
-    [username, 'followed']
+    `SELECT 1 FROM followed_accounts
+     WHERE username = $1 AND status = 'followed'
+       AND followed_by_account = $2`,
+    [username, accountName]
   );
   return result.rows.length > 0;
 }
 
-// Add followed account
-export async function addFollowedAccount(username, poolSource) {
+// Add followed account, stamped with the account that did the follow.
+export async function addFollowedAccount(username, poolSource, accountName) {
   try {
     await pool.query(
-      'INSERT INTO followed_accounts (username, pool_source) VALUES ($1, $2)',
-      [username, poolSource]
+      `INSERT INTO followed_accounts (username, pool_source, followed_by_account)
+       VALUES ($1, $2, $3)`,
+      [username, poolSource, accountName]
     );
     return true;
   } catch (err) {
-    if (err.code === '23505') { // PostgreSQL unique violation error code
-      console.log(`⚠️  ${username} already in database`);
+    if (err.code === '23505') { // unique violation
+      console.log(`⚠️  ${username} already followed by ${accountName}`);
       return false;
     }
     throw err;
@@ -196,6 +225,51 @@ export async function getAllFollowedAccounts() {
     ['followed']
   );
   return result.rows;
+}
+
+// Oldest followed accounts past a cooldown window for a given agent account.
+// Restricted to followed_by_account = $accountName so uw_apateu doesn't pull
+// rows that ucla_apateu followed.
+export async function getOldestFollowedAccounts(limit = 100, minHoursOld = 72, accountName = null) {
+  const result = await pool.query(
+    `SELECT username, followed_at, pool_source
+     FROM followed_accounts
+     WHERE status = 'followed'
+       AND followed_by_account = $1
+       AND followed_at < NOW() - ($2 || ' hours')::INTERVAL
+     ORDER BY followed_at ASC
+     LIMIT $3`,
+    [accountName, String(minHoursOld), limit]
+  );
+  return result.rows;
+}
+
+// Usernames currently in cooldown (followed within the last `hoursBack` hours)
+// for any account, returned as a Set. Used to filter the live-following-list
+// candidate pool. Loose by design — covers legacy NULL-account rows too, on
+// the assumption "if any record was made recently, leave that user alone."
+export async function getCooldownUsernames(hoursBack = 72) {
+  const result = await pool.query(
+    `SELECT DISTINCT username FROM followed_accounts
+     WHERE status = 'followed'
+       AND followed_at >= NOW() - ($1 || ' hours')::INTERVAL`,
+    [String(hoursBack)]
+  );
+  return new Set(result.rows.map(r => r.username));
+}
+
+// Mark this account's row for `username` as unfollowed. Also sweeps any
+// legacy NULL-account row, since pre-migration data has no clear owner and
+// leaving stale 'followed' rows behind would just confuse future runs.
+export async function markAsUnfollowed(username, accountName) {
+  await pool.query(
+    `UPDATE followed_accounts
+     SET status = 'unfollowed', unfollowed_at = CURRENT_TIMESTAMP
+     WHERE username = $1
+       AND status = 'followed'
+       AND (followed_by_account = $2 OR followed_by_account IS NULL)`,
+    [username, accountName]
+  );
 }
 
 // Get stats

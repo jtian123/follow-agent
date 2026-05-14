@@ -16,7 +16,7 @@ if (accountFlagIndex !== -1 && args[accountFlagIndex + 1]) {
   args.splice(accountFlagIndex, 2);
 }
 
-const sessionLimit = args[0] ? parseInt(args[0]) : 150; // Default: 150 unfollows per session
+const sessionLimit = args[0] ? parseInt(args[0]) : 50; // Default: 50 unfollows per session (conservative for risk reduction)
 const maxExtract = args[1] ? parseInt(args[1]) : 1000; // Default: Extract up to 1000 users
 
 // Validate arguments
@@ -24,13 +24,13 @@ if (isNaN(sessionLimit) || sessionLimit <= 0) {
   console.log('\n❌ Invalid session limit. Must be a positive number.');
   console.log('\nUsage: npm run unfollow [session_limit] [max_extract] [--account <name>]');
   console.log('\nOptional:');
-  console.log('  - session_limit     : Number of users to unfollow (default: 150)');
+  console.log('  - session_limit     : Number of users to unfollow (default: 50)');
   console.log('  - max_extract       : Max users to extract from following list (default: 1000)');
   console.log('  - --account, -a     : Instagram account to use (default: from IG_ACCOUNT env or "default")');
   console.log('\nExamples:');
-  console.log('  npm run unfollow                            # Unfollow up to 150 users (default)');
-  console.log('  npm run unfollow 200                        # Unfollow up to 200 users');
-  console.log('  npm run unfollow 100 500 --account sf_apateu  # Unfollow 100 users, scan 500 max');
+  console.log('  npm run unfollow                            # Unfollow up to 50 users (default)');
+  console.log('  npm run unfollow 100                        # Unfollow up to 100 users');
+  console.log('  npm run unfollow 50 500 --account sf_apateu # Unfollow 50, scan 500 max');
   console.log('  IG_ACCOUNT=ucb_apateu npm run unfollow      # Unfollow with ucb_apateu account\n');
   process.exit(1);
 }

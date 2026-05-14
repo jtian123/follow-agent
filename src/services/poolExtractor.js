@@ -1,6 +1,201 @@
 import { getPage, navigateTo, humanScroll, randomDelay, wait, getCurrentAccount } from '../utils/browser.js';
 import { clickByXPath } from '../utils/helpers.js';
 
+// Find and click the followers/following link on a profile page.
+// Robust against Instagram swapping <a href> for buttons or delaying render.
+async function clickProfileListLink(page, kind) {
+  const hrefPattern = `/${kind}/`;
+
+  // Strategy 1: native anchor with href. Use Puppeteer's click for real events.
+  try {
+    await page.waitForSelector(`a[href*="${hrefPattern}"]`, { timeout: 5000 });
+    const link = await page.$(`a[href*="${hrefPattern}"]`);
+    if (link) {
+      await link.click();
+      return { ok: true, strategy: 'anchor' };
+    }
+  } catch (_) {}
+
+  // Strategy 2: locate by text, click via real mouse event at center coords.
+  // page.evaluate returns coordinates; page.mouse.click dispatches a real
+  // synthetic mouse event that triggers React/pointer handlers (calling
+  // .click() inside the page only fires onclick attrs, not React listeners
+  // attached at the root in some Instagram layouts).
+  const coords = await page.evaluate((kindArg) => {
+    // textContent of "1,234following" (no space) is possible when number/label
+    // are sibling spans without whitespace text nodes — allow zero-or-more \s.
+    const pattern = new RegExp(`^[\\d,.]+\\s*[KkMm]?\\s*${kindArg}$`, 'i');
+
+    // Pick the smallest matching element (innermost) to avoid grabbing big
+    // wrappers whose textContent happens to also match.
+    let smallest = null;
+    let smallestSize = Infinity;
+    for (const el of document.querySelectorAll('a, button, span, div, li')) {
+      const text = (el.textContent || '').trim();
+      if (!pattern.test(text)) continue;
+      const size = (el.outerHTML || '').length;
+      if (size < smallestSize) {
+        smallestSize = size;
+        smallest = el;
+      }
+    }
+    if (!smallest) return null;
+
+    // Walk up to find a clickable ancestor. Broader signals than before:
+    // anchor, button, role=button|link, cursor:pointer, or tabindex set.
+    let target = smallest;
+    let cursor = smallest;
+    while (cursor && cursor !== document.body) {
+      const tag = cursor.tagName;
+      const role = cursor.getAttribute('role');
+      const tabindex = cursor.getAttribute('tabindex');
+      const style = window.getComputedStyle(cursor);
+      if (
+        tag === 'A' || tag === 'BUTTON' ||
+        role === 'button' || role === 'link' ||
+        style.cursor === 'pointer' ||
+        tabindex !== null
+      ) {
+        target = cursor;
+        break;
+      }
+      cursor = cursor.parentElement;
+    }
+
+    target.scrollIntoView({ block: 'center' });
+    const rect = target.getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      tag: target.tagName,
+      href: target.getAttribute('href'),
+      role: target.getAttribute('role'),
+      text: (target.textContent || '').trim().slice(0, 80),
+    };
+  }, kind);
+
+  if (!coords) return { ok: false };
+
+  // Let scrollIntoView settle, then dispatch a real mouse click.
+  await wait(300);
+  await page.mouse.click(coords.x, coords.y);
+  return { ok: true, strategy: 'mouse-click', target: coords };
+}
+
+// Instagram's followers/following modal opens in a "mutualOnly" preview
+// state when reached by URL navigation (4–5 mutuals + a "See all" link).
+// The full virtualized list only mounts after that link is clicked.
+// Returns ok=false when the link isn't present (already on the full list).
+async function expandToFullList(page, kind) {
+  const label = kind === 'followers' ? 'See all followers' : 'See all following';
+
+  const coords = await page.evaluate((labelArg) => {
+    const dialog = document.querySelector('div[role="dialog"]');
+    if (!dialog) return null;
+
+    let smallest = null;
+    let smallestSize = Infinity;
+    for (const el of dialog.querySelectorAll('a, button, span, div')) {
+      const text = (el.textContent || '').trim();
+      if (text.toLowerCase() !== labelArg.toLowerCase()) continue;
+      const size = (el.outerHTML || '').length;
+      if (size < smallestSize) {
+        smallestSize = size;
+        smallest = el;
+      }
+    }
+    if (!smallest) return null;
+
+    let target = smallest;
+    let cursor = smallest;
+    while (cursor && cursor !== dialog) {
+      const tag = cursor.tagName;
+      const role = cursor.getAttribute('role');
+      const tabindex = cursor.getAttribute('tabindex');
+      const style = window.getComputedStyle(cursor);
+      if (
+        tag === 'A' || tag === 'BUTTON' ||
+        role === 'button' || role === 'link' ||
+        style.cursor === 'pointer' ||
+        tabindex !== null
+      ) {
+        target = cursor;
+        break;
+      }
+      cursor = cursor.parentElement;
+    }
+
+    target.scrollIntoView({ block: 'center' });
+    const rect = target.getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      text: (target.textContent || '').trim().slice(0, 80),
+    };
+  }, label);
+
+  if (!coords) return { ok: false };
+
+  await wait(300);
+  await page.mouse.click(coords.x, coords.y);
+  return { ok: true, target: coords };
+}
+
+// Scroll the user-list modal to load more virtualized rows.
+// Picks the scrollable element that contains the most user links (the actual
+// list), not just the first wrapper with overflow. Also dispatches scroll/wheel
+// events to nudge React/IntersectionObserver-based loaders.
+//
+// `mode` can be:
+//   'bottom' — jump to scrollHeight (default)
+//   number   — relative scrollBy (negative = up, positive = down)
+async function scrollUserListModal(page, mode = 'bottom') {
+  return await page.evaluate((modeArg) => {
+    const dialog = document.querySelector('div[role="dialog"]');
+    if (!dialog) return { ok: false, reason: 'no-dialog' };
+
+    const candidates = Array.from(dialog.querySelectorAll('*')).filter(el => {
+      if (el.scrollHeight <= el.clientHeight + 1) return false;
+      const style = window.getComputedStyle(el);
+      return style.overflowY === 'auto' || style.overflowY === 'scroll';
+    });
+
+    if (candidates.length === 0) {
+      const fallback = Array.from(dialog.querySelectorAll('*'))
+        .find(el => el.scrollHeight > el.clientHeight + 1);
+      if (fallback) candidates.push(fallback);
+    }
+
+    let best = null;
+    let bestLinks = -1;
+    for (const el of candidates) {
+      const links = el.querySelectorAll('a[href^="/"]').length;
+      if (links > bestLinks) {
+        bestLinks = links;
+        best = el;
+      }
+    }
+
+    if (!best) return { ok: false, reason: 'no-scrollable' };
+
+    const before = best.scrollTop;
+    if (modeArg === 'bottom') {
+      best.scrollTop = best.scrollHeight;
+    } else if (typeof modeArg === 'number') {
+      best.scrollTop = Math.max(0, best.scrollTop + modeArg);
+    }
+    best.dispatchEvent(new Event('scroll', { bubbles: true }));
+    best.dispatchEvent(new WheelEvent('wheel', {
+      bubbles: true,
+      cancelable: true,
+      deltaY: typeof modeArg === 'number' ? modeArg : 1000,
+      deltaMode: 0,
+    }));
+
+    return { ok: true, before, after: best.scrollTop, links: bestLinks };
+  }, mode);
+}
+
 // Extract users from a pool
 export async function extractUsersFromPool(poolUrl, poolType, targetCount = 30) {
   const page = getPage();
@@ -217,20 +412,8 @@ async function extractPostLikers(targetCount = 200, maxScrolls = 200) {
         // Continue to next iteration
       }
 
-      // Scroll modal to bottom
       try {
-        await page.evaluate(() => {
-          const dialog = document.querySelector('div[role="dialog"]');
-          if (dialog) {
-            const allElements = dialog.querySelectorAll('*');
-            const scrollContainer = Array.from(allElements).find(el => {
-              return el.scrollHeight > el.clientHeight;
-            });
-            if (scrollContainer) {
-              scrollContainer.scrollTop = scrollContainer.scrollHeight;
-            }
-          }
-        });
+        await scrollUserListModal(page);
       } catch (scrollError) {
         console.log(`   ⚠️  Error scrolling: ${scrollError.message}`);
       }
@@ -360,22 +543,13 @@ async function extractAccountFollowers(targetCount = 200, maxScrolls = 200) {
     // Wait for profile to load
     await wait(randomDelay(3000, 4000));
 
-    // Click on followers count with retry logic
+    // Click on followers count with multi-strategy fallback
     console.log('   🔍 Looking for "followers" link...');
-    let followersLink = await page.$('a[href*="/followers/"]');
-
-    if (!followersLink) {
-      console.log('   ⚠️  Followers link not found, waiting and retrying...');
-      await wait(2000);
-      followersLink = await page.$('a[href*="/followers/"]');
-    }
-
-    if (!followersLink) {
+    const result = await clickProfileListLink(page, 'followers');
+    if (!result.ok) {
       throw new Error('Could not find followers link - make sure you are on a profile page');
     }
-
-    console.log('   ✅ Found followers link, clicking...');
-    await followersLink.click();
+    console.log(`   ✅ Found followers link via ${result.strategy}${result.target ? ` (clicked <${result.target.tag.toLowerCase()}> "${result.target.text}")` : ''}, clicking...`);
 
     // Wait for modal to open with increased timeout
     console.log('   ⏳ Waiting for modal to open...');
@@ -389,21 +563,25 @@ async function extractAccountFollowers(targetCount = 200, maxScrolls = 200) {
       throw new Error('Modal did not open - the followers button click may have failed');
     }
 
+    // Expand mutualOnly preview to the full list if the route landed us there.
+    const expanded = await expandToFullList(page, 'followers');
+    if (expanded.ok) {
+      console.log(`   ✅ Expanded preview → full list (clicked "${expanded.target.text}")`);
+      await wait(randomDelay(1500, 2500));
+    }
+
     console.log(`   📜 Scrolling to extract ${targetCount} users (max ${maxScrolls} scrolls)...`);
 
-    let previousCount = 0;
+    let stagnantScrolls = 0;
+    let lastSeenCount = 0;
 
     for (let i = 0; i < maxScrolls; i++) {
-      // Extract ALL usernames from modal (SIMPLIFIED - no button detection)
       const usernames = await page.evaluate(() => {
         const userLinks = document.querySelectorAll('div[role="dialog"] a[href^="/"]');
         const users = [];
-
         userLinks.forEach(link => {
           const href = link.getAttribute('href');
           const username = href.replace('/', '').split('/')[0];
-
-          // Filter out invalid usernames
           if (username &&
               !username.includes('?') &&
               !username.includes('p/') &&
@@ -412,51 +590,48 @@ async function extractAccountFollowers(targetCount = 200, maxScrolls = 200) {
             users.push(username);
           }
         });
-
         return users;
       });
 
-      // Deduplicate
       allUsers = [...new Set([...allUsers, ...usernames])];
 
-      // Update count
-      if (allUsers.length !== previousCount) {
-        previousCount = allUsers.length;
-      }
-
-      // Scroll modal to bottom
-      await page.evaluate(() => {
-        const dialog = document.querySelector('div[role="dialog"]');
-        if (dialog) {
-          const allElements = dialog.querySelectorAll('*');
-          const scrollContainer = Array.from(allElements).find(el => {
-            return el.scrollHeight > el.clientHeight;
-          });
-          if (scrollContainer) {
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
-          }
-        }
-      });
-
-      await wait(randomDelay(1500, 2500));
+      const scrollResult = await scrollUserListModal(page, 'bottom');
+      await wait(randomDelay(2500, 4000));
 
       if (i % 10 === 0 && i > 0) {
         console.log(`   📊 Extracted ${allUsers.length}/${targetCount} users...`);
       }
 
-      // Early exit if we have enough
       if (allUsers.length >= targetCount) {
         console.log(`\n   ✅ Target reached: ${allUsers.length} users extracted`);
         break;
       }
+
+      if (allUsers.length === lastSeenCount) {
+        stagnantScrolls++;
+        // Nudge: scroll up then back down so the bottom sentinel re-enters
+        // the viewport — IntersectionObserver-based loaders only fire on
+        // re-entry, not while the sentinel sits in view at scrollTop max.
+        if (stagnantScrolls >= 2) {
+          await scrollUserListModal(page, -800);
+          await wait(randomDelay(1200, 1800));
+          await scrollUserListModal(page, 'bottom');
+          await wait(randomDelay(2500, 4000));
+        }
+        if (stagnantScrolls >= 20) {
+          console.log(`\n   ⚠️  No new users for ${stagnantScrolls} scrolls — list likely exhausted or throttled (last scroll: ${JSON.stringify(scrollResult)})`);
+          break;
+        }
+      } else {
+        stagnantScrolls = 0;
+        lastSeenCount = allUsers.length;
+      }
     }
 
-    // Check if we hit max scrolls without reaching target
     if (allUsers.length < targetCount) {
-      console.log(`\n   ⚠️  Reached max scrolls (${maxScrolls}) with ${allUsers.length} users`);
+      console.log(`\n   ⚠️  Stopped with ${allUsers.length} users (target ${targetCount})`);
     }
 
-    // Close modal
     const closeButton = await page.$('svg[aria-label="Close"]');
     if (closeButton) {
       await closeButton.click();
@@ -500,22 +675,13 @@ async function extractAccountFollowing(targetCount = 200, maxScrolls = 200) {
     // Wait for profile to load
     await wait(randomDelay(3000, 4000));
 
-    // Click on following count with retry logic
+    // Click on following count with multi-strategy fallback
     console.log('   🔍 Looking for "following" link...');
-    let followingLink = await page.$('a[href*="/following/"]');
-
-    if (!followingLink) {
-      console.log('   ⚠️  Following link not found, waiting and retrying...');
-      await wait(2000);
-      followingLink = await page.$('a[href*="/following/"]');
-    }
-
-    if (!followingLink) {
+    const result = await clickProfileListLink(page, 'following');
+    if (!result.ok) {
       throw new Error('Could not find following link - make sure you are on a profile page');
     }
-
-    console.log('   ✅ Found following link, clicking...');
-    await followingLink.click();
+    console.log(`   ✅ Found following link via ${result.strategy}${result.target ? ` (clicked <${result.target.tag.toLowerCase()}> "${result.target.text}")` : ''}, clicking...`);
 
     // Wait for modal to open with increased timeout
     console.log('   ⏳ Waiting for modal to open...');
@@ -529,21 +695,25 @@ async function extractAccountFollowing(targetCount = 200, maxScrolls = 200) {
       throw new Error('Modal did not open - the following button click may have failed');
     }
 
+    // Expand mutualOnly preview to the full list if the route landed us there.
+    const expanded = await expandToFullList(page, 'following');
+    if (expanded.ok) {
+      console.log(`   ✅ Expanded preview → full list (clicked "${expanded.target.text}")`);
+      await wait(randomDelay(1500, 2500));
+    }
+
     console.log(`   📜 Scrolling to extract ${targetCount} users (max ${maxScrolls} scrolls)...`);
 
-    let previousCount = 0;
+    let stagnantScrolls = 0;
+    let lastSeenCount = 0;
 
     for (let i = 0; i < maxScrolls; i++) {
-      // Extract ALL usernames from modal (SIMPLIFIED - no button detection)
       const usernames = await page.evaluate(() => {
         const userLinks = document.querySelectorAll('div[role="dialog"] a[href^="/"]');
         const users = [];
-
         userLinks.forEach(link => {
           const href = link.getAttribute('href');
           const username = href.replace('/', '').split('/')[0];
-
-          // Filter out invalid usernames
           if (username &&
               !username.includes('?') &&
               !username.includes('p/') &&
@@ -552,51 +722,48 @@ async function extractAccountFollowing(targetCount = 200, maxScrolls = 200) {
             users.push(username);
           }
         });
-
         return users;
       });
 
-      // Deduplicate
       allUsers = [...new Set([...allUsers, ...usernames])];
 
-      // Update count
-      if (allUsers.length !== previousCount) {
-        previousCount = allUsers.length;
-      }
-
-      // Scroll modal to bottom
-      await page.evaluate(() => {
-        const dialog = document.querySelector('div[role="dialog"]');
-        if (dialog) {
-          const allElements = dialog.querySelectorAll('*');
-          const scrollContainer = Array.from(allElements).find(el => {
-            return el.scrollHeight > el.clientHeight;
-          });
-          if (scrollContainer) {
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
-          }
-        }
-      });
-
-      await wait(randomDelay(1500, 2500));
+      const scrollResult = await scrollUserListModal(page, 'bottom');
+      await wait(randomDelay(2500, 4000));
 
       if (i % 10 === 0 && i > 0) {
         console.log(`   📊 Extracted ${allUsers.length}/${targetCount} users...`);
       }
 
-      // Early exit if we have enough
       if (allUsers.length >= targetCount) {
         console.log(`\n   ✅ Target reached: ${allUsers.length} users extracted`);
         break;
       }
+
+      if (allUsers.length === lastSeenCount) {
+        stagnantScrolls++;
+        // Nudge: scroll up then back down so the bottom sentinel re-enters
+        // the viewport — IntersectionObserver-based loaders only fire on
+        // re-entry, not while the sentinel sits in view at scrollTop max.
+        if (stagnantScrolls >= 2) {
+          await scrollUserListModal(page, -800);
+          await wait(randomDelay(1200, 1800));
+          await scrollUserListModal(page, 'bottom');
+          await wait(randomDelay(2500, 4000));
+        }
+        if (stagnantScrolls >= 20) {
+          console.log(`\n   ⚠️  No new users for ${stagnantScrolls} scrolls — list likely exhausted or throttled (last scroll: ${JSON.stringify(scrollResult)})`);
+          break;
+        }
+      } else {
+        stagnantScrolls = 0;
+        lastSeenCount = allUsers.length;
+      }
     }
 
-    // Check if we hit max scrolls without reaching target
     if (allUsers.length < targetCount) {
-      console.log(`\n   ⚠️  Reached max scrolls (${maxScrolls}) with ${allUsers.length} users`);
+      console.log(`\n   ⚠️  Stopped with ${allUsers.length} users (target ${targetCount})`);
     }
 
-    // Close modal
     const closeButton = await page.$('svg[aria-label="Close"]');
     if (closeButton) {
       await closeButton.click();

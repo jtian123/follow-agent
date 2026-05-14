@@ -1,7 +1,12 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+
+// Patches ~20 fingerprint leaks (chrome.runtime, plugins, WebGL vendor,
+// permissions API, etc.) so Instagram's bot heuristics see a normal browser.
+puppeteer.use(StealthPlugin());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

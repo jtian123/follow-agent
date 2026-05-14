@@ -1,4 +1,4 @@
-import { getPage, navigateTo, humanClick, randomDelay, humanScroll, wait } from '../utils/browser.js';
+import { getPage, navigateTo, humanClick, randomDelay, humanScroll, wait, getCurrentAccount } from '../utils/browser.js';
 import { isAlreadyFollowed, addFollowedAccount, getTodayFollowCount, incrementTodayFollowCount, getPendingUsers, updateUserFollowStatus } from '../utils/database.js';
 import { existsByXPath, clickByXPath } from '../utils/helpers.js';
 
@@ -63,9 +63,10 @@ export async function executeFollows(users, poolSource) {
   }
 
   // Filter out already followed users
+  const accountName = getCurrentAccount();
   const toFollow = [];
   for (const username of users) {
-    if (await isAlreadyFollowed(username)) {
+    if (await isAlreadyFollowed(username, accountName)) {
       console.log(`⏭️  Skipping ${username} (already followed)`);
     } else {
       toFollow.push(username);
@@ -146,7 +147,7 @@ export async function executeFollows(users, poolSource) {
 
         await wait(randomDelay(500, 1000));
 
-        const dbSaved = await addFollowedAccount(username, poolSource);
+        const dbSaved = await addFollowedAccount(username, poolSource, accountName);
         if (dbSaved) {
           await incrementTodayFollowCount();
           followedCount++;
@@ -309,7 +310,7 @@ export async function executeFollowsFromQueue(sessionLimit = 15, accountName = '
 
         await wait(randomDelay(500, 1000));
 
-        await addFollowedAccount(username, poolSource);
+        await addFollowedAccount(username, poolSource, getCurrentAccount());
         await incrementTodayFollowCount();
         followedCount++;
         // UPDATE extracted_users table as well

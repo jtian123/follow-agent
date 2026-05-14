@@ -1,5 +1,10 @@
 import { getPage, navigateTo, randomDelay, wait, getCurrentAccount, login } from '../utils/browser.js';
-import { incrementTodayUnfollowCount, getTodayUnfollowCount } from '../utils/database.js';
+import {
+  incrementTodayUnfollowCount,
+  getTodayUnfollowCount,
+  getCooldownUsernames,
+  markAsUnfollowed,
+} from '../utils/database.js';
 import { existsByXPath, clickByXPath } from '../utils/helpers.js';
 
 const MIN_DELAY = 10000;  // 10 seconds
@@ -192,10 +197,91 @@ export async function extractCurrentFollowing(maxUsers = 1000) {
     await wait(randomDelay(1500, 2500)); // Wait for new users to load
   }
 
-  const userList = Array.from(followingUsers);
-  console.log(`\n✅ Extraction complete! Found ${userList.length} users you're following\n`);
+  // IG's following modal renders most-recent follows near the top and older
+  // ones toward the bottom. Reverse so the array is oldest-first — the safe
+  // direction to unfollow from (avoids same-day follow→unfollow patterns).
+  const userList = Array.from(followingUsers).reverse();
+  console.log(`\n✅ Extraction complete! Found ${userList.length} users you're following (oldest-first)\n`);
 
   return userList;
+}
+
+/**
+ * Build the unfollow target list from the live following list only.
+ *
+ * Scrapes up to `scanLimit` usernames (oldest-first thanks to the reverse
+ * inside extractCurrentFollowing), drops anyone in the 72h cooldown set,
+ * and returns the result. The unfollow loop will pick the first
+ * `sessionLimit` of these.
+ *
+ * @param {number} scanLimit - Max usernames to scrape from the live list
+ * @param {number} minHoursOld - Cooldown window (hours since follow)
+ */
+async function getUnfollowCandidates(scanLimit, minHoursOld = 72) {
+  const accountName = getCurrentAccount();
+  console.log(`\n🔎 Live-scraping ${accountName}'s following list (up to ${scanLimit} users)...`);
+
+  const liveList = await extractCurrentFollowing(scanLimit);
+
+  const cooldown = await getCooldownUsernames(minHoursOld);
+  console.log(`   ⏱️  Cooldown set: ${cooldown.size} usernames followed in last ${minHoursOld}h (any account)`);
+
+  const candidates = [];
+  let cooldownSkipped = 0;
+  for (const u of liveList) {
+    if (cooldown.has(u)) { cooldownSkipped++; continue; }
+    candidates.push(u);
+  }
+  console.log(`   ✅ ${candidates.length} eligible candidates after cooldown filter (${cooldownSkipped} skipped)`);
+  return { candidates };
+}
+
+// Detect the "Follows you" badge that IG shows on a profile when the viewed
+// user follows the logged-in account back. We skip mutuals — keeping mutuals
+// is the cheapest way to improve the follow:follower ratio without losing
+// engagement.
+async function isMutualFollower(page) {
+  return await page.evaluate(() => {
+    // Limit the search to the profile header to avoid false positives in
+    // other surfaces (suggestions, related accounts, etc.).
+    const header = document.querySelector('header') || document.body;
+    const text = header.innerText || '';
+    return /\bFollows you\b/i.test(text);
+  });
+}
+
+// Detect the follow-state of the currently-loaded profile by reading the
+// primary action button. IG renders this as either <button> or
+// <div role="button"> depending on layout/A-B test, so we accept both.
+// Returns 'following' | 'requested' | 'follow' | 'unknown'.
+//
+// 'unknown' means the page hadn't rendered the action button when we looked
+// (rate-limit, network hiccup, layout we don't recognize). The caller MUST
+// NOT mutate DB state on 'unknown' — destroying state on a detection failure
+// is exactly the bug that just cost us 60 rows.
+async function getFollowState(page) {
+  // Poll briefly for one of the action buttons to render before declaring
+  // unknown — IG profiles often paint header before the action button.
+  await page.waitForFunction(() => {
+    const els = Array.from(document.querySelectorAll('header button, header [role="button"]'));
+    return els.some(el => {
+      const t = (el.innerText || '').trim();
+      return t === 'Follow' || t === 'Following' || t === 'Requested' ||
+             t === 'Follow Back' || t === 'Follow back';
+    });
+  }, { timeout: 5000 }).catch(() => {});
+
+  return await page.evaluate(() => {
+    const header = document.querySelector('header') || document.body;
+    const els = Array.from(header.querySelectorAll('button, [role="button"]'));
+    for (const el of els) {
+      const t = (el.innerText || '').trim();
+      if (t === 'Following') return 'following';
+      if (t === 'Requested') return 'requested';
+      if (t === 'Follow' || t === 'Follow Back' || t === 'Follow back') return 'follow';
+    }
+    return 'unknown';
+  });
 }
 
 /**
@@ -234,17 +320,49 @@ export async function executeUnfollows(usernames, sessionLimit = 150) {
       await navigateTo(`https://www.instagram.com/${username}/`);
       await wait(randomDelay(2000, 3000));
 
-      // Check if we're following this user
-      const isFollowing = await existsByXPath(page, "//button[contains(., 'Following') or contains(., 'Requested')]");
+      // Read the profile's action-button state. Robust against <button> vs
+      // <div role="button"> markup variants.
+      const state = await getFollowState(page);
 
-      if (!isFollowing) {
-        console.log(`   ⏭️  Not following @${username} (already unfollowed or never followed)`);
+      if (state === 'follow') {
+        // Positive confirmation we are NOT following — safe to reconcile DB.
+        console.log(`   ⏭️  Not following @${username} (button reads "Follow")`);
+        try { await markAsUnfollowed(username, getCurrentAccount()); } catch (_) {}
         skippedCount++;
         continue;
       }
 
-      // Click "Following" button to open menu
-      const followingClicked = await clickByXPath(page, "//button[contains(., 'Following') or contains(., 'Requested')]");
+      if (state === 'unknown') {
+        // Page didn't render an action button we recognize. DO NOT mutate DB
+        // here — we don't know the truth. Just skip and try again next run.
+        console.log(`   ⚠️  @${username} — could not detect follow state (page may not have loaded). Leaving DB unchanged.`);
+        errorCount++;
+        continue;
+      }
+
+      // Skip mutual followers — improves follow:follower ratio cheaply, and
+      // unfollowing engaged accounts is wasteful.
+      if (await isMutualFollower(page)) {
+        console.log(`   🤝 @${username} follows you back — skipping (mutual)`);
+        skippedCount++;
+        continue;
+      }
+
+      // state is 'following' or 'requested' — proceed to unfollow.
+      // Click the action button to open the unfollow menu (covers both
+      // <button> and <div role="button"> markup).
+      const followingClicked = await page.evaluate(() => {
+        const header = document.querySelector('header') || document.body;
+        const els = Array.from(header.querySelectorAll('button, [role="button"]'));
+        for (const el of els) {
+          const t = (el.innerText || '').trim();
+          if (t === 'Following' || t === 'Requested') {
+            el.click();
+            return true;
+          }
+        }
+        return false;
+      });
 
       if (!followingClicked) {
         console.log(`   ⚠️  Could not find Following button for @${username}`);
@@ -300,14 +418,16 @@ export async function executeUnfollows(usernames, sessionLimit = 150) {
         // Wait for popup to close and page to update
         await wait(2000);
 
-        // Verify unfollow succeeded by checking if button now says "Follow"
-        const nowFollowButton = await existsByXPath(page, "//button[contains(., 'Follow') and not(contains(., 'Following'))]");
+        // Verify by re-reading the action-button state.
+        const stateAfter = await getFollowState(page);
+        const nowFollowButton = stateAfter === 'follow';
 
         if (nowFollowButton) {
           console.log(`   ✅ Unfollowed @${username}`);
 
           // Increment counter
           await incrementTodayUnfollowCount();
+          try { await markAsUnfollowed(username, getCurrentAccount()); } catch (_) {}
           unfollowedCount++;
         } else {
           console.log(`   ⚠️  Unfollow action did not complete for @${username} (button still shows Following)`);
@@ -369,26 +489,31 @@ export async function executeUnfollows(usernames, sessionLimit = 150) {
 }
 
 /**
- * Main function to unfollow all current followings
- * @param {number} sessionLimit - Max unfollows for this session (default: 150)
- * @param {number} maxExtract - Max users to extract from following list (default: 1000)
+ * Main function to unfollow stale followings.
+ *
+ * Args map directly to the CLI: `npm run unfollow -- <sessionLimit> <maxExtract>`.
+ *   sessionLimit — max unfollows performed this session
+ *   maxExtract   — how many users to scrape from the live following list
+ *                  (the deeper into the list, the older the follows we surface)
+ *
+ * The full live list is scraped up to `maxExtract`, reversed so the bottom
+ * of IG's modal (oldest follows) comes first, cooldown-filtered, then the
+ * first `sessionLimit` non-mutual non-following entries get unfollowed.
  */
-export async function unfollowAll(sessionLimit = 150, maxExtract = 1000) {
-  console.log('\n🚀 Starting mass unfollow process...');
-  console.log(`⚠️  This will unfollow users from your current following list`);
+export async function unfollowAll(sessionLimit = 50, maxExtract = 1000, minHoursOld = 72) {
+  console.log('\n🚀 Starting unfollow process...');
   console.log(`📊 Session limit: ${sessionLimit} unfollows`);
-  console.log(`📋 Max to extract: ${maxExtract} users\n`);
+  console.log(`📜 Live-list scan: up to ${maxExtract} users (oldest-first after reverse)`);
+  console.log(`⏱️  Cooldown: only users followed ≥${minHoursOld}h ago`);
+  console.log(`🤝 Mutual followers will be skipped\n`);
 
-  // Step 1: Extract current following list
-  const followingList = await extractCurrentFollowing(maxExtract);
+  const { candidates } = await getUnfollowCandidates(maxExtract, minHoursOld);
 
-  if (followingList.length === 0) {
-    console.log('✅ No users found in following list!');
+  if (candidates.length === 0) {
+    console.log('✅ No eligible candidates after cooldown filter — try a larger second arg to scan deeper into the list.');
     return { unfollowed: 0, errors: 0 };
   }
 
-  // Step 2: Execute unfollows
-  const summary = await executeUnfollows(followingList, sessionLimit);
-
+  const summary = await executeUnfollows(candidates, sessionLimit);
   return summary;
 }
